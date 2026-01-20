@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Prediksi TPT Indonesia</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f4f8;
+    color: #333;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2.2em;
+    margin-bottom: 40px;
+    color: #1e3a8a;
+}
+
+form {
+    background: #fff;
+    padding: 30px;
+    border-radius: 14px;
+    box-shadow: 0 15px 25px rgba(0,0,0,0.08);
+    display: grid;
+    gap: 20px;
+}
+
+label {
+    font-weight: 600;
+}
+
+select, input[type=number] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+.checkbox-group {
+    display: flex;
+    gap: 20px;
+}
+
+input[type=checkbox] {
+    transform: scale(1.2);
+}
+
+input[type=submit] {
+    padding: 14px;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+input[type=submit]:hover {
+    box-shadow: 0 8px 20px rgba(59,130,246,0.3);
+    transform: translateY(-2px);
+}
+
+.cards {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: #fff;
+    padding: 22px;
+    border-radius: 14px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+}
+
+.card h2 {
+    font-size: 1.2em;
+    margin-bottom: 8px;
+    color: #1e3a8a;
+}
+
+.card-wide {
+    grid-column: span 2;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    text-align: center;
+}
+
+.card-wide div {
+    flex: 1;
+}
+
+.card-wide h2 {
+    margin-bottom: 6px;
+}
+
+.visual {
+    margin-top: 40px;
+    background: #fff;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.visual h2 {
+    margin-bottom: 20px;
+    color: #1e3a8a;
+}
+
+.visual img {
+    width: 100%;
+    border-radius: 12px;
+}
+
+.error {
+    color: #dc2626;
+    font-weight: 600;
+}
+
+@media (max-width: 600px) {
+    .card-wide {
+        grid-column: span 1;
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h1>Prediksi Tingkat Pengangguran Terbuka (TPT)</h1>
+
+    <form method="POST">
+        <div>
+            <label>Pilih Provinsi</label>
+            <select name="provinsi">
+                {% for prov in provinsi_list %}
+                <option value="{{ prov }}">{{ prov }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label>Jumlah Tahun ke Depan</label>
+            <input type="number" name="steps" value="5" min="1" max="20">
+        </div>
+
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="show_trend"> Tampilkan Trend</label>
+            <label><input type="checkbox" name="show_chart"> Tampilkan Grafik</label>
+        </div>
+
+        <input type="submit" value="Prediksi">
+    </form>
+
+    {% if result %}
+    <div class="cards">
+        <div class="card">
+            <h2>Provinsi</h2>
+            <p>{{ result.provinsi }}</p>
+        </div>
+
+        <div class="card">
+            <h2>MSE</h2>
+            <p>{{ result.mse | round(3) }}</p>
+        </div>
+
+        <div class="card">
+            <h2>RMSE</h2>
+            <p>{{ result.rmse | round(3) }}</p>
+        </div>
+
+        <div class="card">
+            <h2>MAE</h2>
+            <p>{{ result.mae | round(3) }}</p>
+        </div>
+
+        <div class="card card-wide">
+            <div>
+                <h2>Tahun</h2>
+                <p>{{ result.tahun }}</p>
+            </div>
+            <div>
+                <h2>TPT</h2>
+                <p>
+                    {% for t in result.tpt %}
+                        {{ t | float | round(2) }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if chart %}
+    <div class="visual">
+        <h2>Visualisasi Prediksi</h2>
+        <img src="data:image/png;base64,{{ chart }}">
+    </div>
+    {% endif %}
+
+    {% if shap_img %}
+    <div class="visual">
+        <h2>Explainable AI (SHAP)</h2>
+        <img src="data:image/png;base64,{{ shap_img }}">
+    </div>
+    {% elif shap_error %}
+    <div class="visual">
+        <p style="color:red;">{{ shap_error }}</p>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
